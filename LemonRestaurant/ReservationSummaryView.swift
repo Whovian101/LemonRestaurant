@@ -8,18 +8,27 @@
 import SwiftUI
 
 struct ReservationSummaryView: View {
-    private var name:String
-    private var guests:Int
-    private var allergiesNotes:String
+    @Binding var name:String
+    @Binding var guests:Int
+    @Binding var allergiesNotes:String
+    @Binding var reservationDate: Date
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10){
-            Text("Reservation Summary").font(.title)
+            Text("Reservation Completed!")
+                .font(.title)
+                .foregroundColor(.green)
+            
             
             //adding information
-            Text("Name: \(name)")
-            Text("Number of Guests: \(guests)")
-            Text("Allergy Notes: \(allergiesNotes)")
+            Text("Thank you, \(name), your reservation is confirmed for \(guests) people.")
+            Text("Date: \(reservationDate.formatted(date: .long,time: .shortened))")
+            Text("Guests: \(guests)")
+            
+            // show allergy notes only if not empty
+            if !allergiesNotes.isEmpty {
+                Text("Note: We will accommodate the following allergies: \(allergiesNotes)")
+            }
             
         }
     }
@@ -28,3 +37,5 @@ struct ReservationSummaryView: View {
 //#Preview {
  //   ReservationSummaryView()
 //}
+
+
