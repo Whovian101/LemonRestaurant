@@ -41,17 +41,26 @@ struct MenuView: View {
      return the calculated value
      }
      */
-//    var sortedMenu: [(name: String,price:Double)]{
-//        menuItems.sorted{ $0.value < $1.value } // key alpha - value price
-//            .map{(key, value) in (name: key, price: value)}
-//    }
-        
-        var filteredMenu: [(name: String,price:Double)]{
-            menuItems.filter{ !showPremium || $0.value >= 10 }
-                .map{(key,value) in (name: key, price: value)}
-        }
+    //    var sortedMenu: [(name: String,price:Double)]{
+    //        menuItems.sorted{ $0.value < $1.value } // key alpha - value price
+    //            .map{(key, value) in (name: key, price: value)}
+    //    }
+    
+    var filteredMenu: [(name: String,price:Double)]{
+        menuItems.filter{ !showPremium || $0.value >= 10 }
+            .map{(key,value) in (name: key, price: value)}
+    }
     var shouldShowMenu: Bool{
         showMenu || showPremium
+    }
+    var premiumCount: Int {
+        filteredMenu.filter{$0.price >= 10}.count
+    }
+    var regularCount: Int {
+        filteredMenu.filter{$0.price < 10}.count
+    }
+    var totalPrice: Double {
+        filteredMenu.reduce(0){ $0 + $1.price }
     }
     
     var body: some View {
@@ -72,28 +81,65 @@ struct MenuView: View {
                     .padding(.bottom)
                 
                 Toggle("Premium", isOn: $showPremium)
-
+                
                 Button("View Desserts"){
                     showDessert.toggle()
                 }
-                        .sheet(isPresented: $showDessert){
-                            DessertView()
-                        }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(10.0)
+                .sheet(isPresented: $showDessert){
+                    DessertView()
+
                 }
+            }
             
             
             //Menu List
             if shouldShowMenu {
                 if showPremium {
                     Text("Showing Premium Items Only")
-                        .font(.title2)
+                        .font(.title3)
                         .foregroundColor(.blue)
                         .padding()
                     
                 }
                 List {
-                    ForEach(filteredMenu.sorted(by: { $0.name < $1.name }), id: \.name) { item in                        HStack {                            VStack(alignment: .leading) {                                Text(item.name)                                    .bold();                                Text("$\(item.price, specifier: "%.2f")")
-                                    .foregroundColor(.secondary)
+                    Section(header: Text("Showing \(filteredMenu.count) items")) {
+                        ForEach(filteredMenu.sorted(by: { $0.name < $1.name }), id: \.name) { item in                        HStack {                            VStack(alignment: .leading) {                                Text(item.name)                                    .bold();                                Text("$\(item.price, specifier: "%.2f")")
+                                .foregroundColor(.secondary)
+                        }
+                            
+                            Spacer()
+                            if item.price >= 10 {                                Label("Premium", systemImage: "star.fill")              .font(.caption)                                    .foregroundColor(.orange)                          .padding(6)                                        .background(Color.orange.opacity(0.1))             .cornerRadius(8)
                             }
-                           
-                        Spacer();                            if item.price >= 10 {                                Label("Premium", systemImage: "star.fill")                                    .font(.caption)                                    .foregroundColor(.orange)                                    .padding(6)                                    .background(Color.orange.opacity(0.1))                                    .cornerRadius(8)                            };                            if item.price < 7 {                                Label("Value", systemImage: "tag.fill")                                    .font(.caption)                                    .foregroundColor(.green)                                    .padding(6)                                    .background(Color.green.opacity(0.1))                                    .cornerRadius(8)                            }                        }                    }                }            }        }        .padding()    }};#Preview {    MenuView()}
+                            if item.price < 7 {                                Label("Value", systemImage: "tag.fill")            .font(.caption)                                    .foregroundColor(.green)                           .padding(6)                                    .background(Color.green.opacity(0.1))              .cornerRadius(8)
+                            }
+                        }
+                        }
+                    }
+                }
+                // Menu Summary
+                HStack(spacing: 20) {
+                    VStack {
+                        Text("Premium Items")                          .font(.caption)                           .foregroundColor(.gray);
+                        Text("\(premiumCount)")                        .font(.headline)
+                }
+                    VStack {
+                        Text("Regular Items")                   .font(.caption)                       .foregroundColor(.gray);
+                        Text("\(regularCount)")                 .font(.headline)                    }
+                    VStack {
+                        Text("Total Price")                     .font(.caption)                       .foregroundColor(.gray);
+                        Text("$\(totalPrice, specifier: "%.2f")")   .font(.headline)
+                    }
+                }
+                .padding()
+            }
+        }
+        .padding()
+    }
+}
+#Preview {
+    MenuView()
+}
+
