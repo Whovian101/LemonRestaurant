@@ -14,7 +14,8 @@ import SwiftUI
 struct MenuView: View {
     //Variable secrtion
     @State private var showMenu: Bool = false
-    @State private var showthankYou: Bool = false
+    @State private var showPremium: Bool = false
+    @State private var showDessert: Bool = false
     // creating the menu dictionary
     let menuItems = [
         "Pizza":6.99,
@@ -31,6 +32,27 @@ struct MenuView: View {
         "Bonemarrow truffles fries":18.99
     ]
     
+    // Computed properties/variables
+    // they do not store a alue
+    // each access recomputes the value
+    
+    /*
+     var propertyName: Type{
+     return the calculated value
+     }
+     */
+//    var sortedMenu: [(name: String,price:Double)]{
+//        menuItems.sorted{ $0.value < $1.value } // key alpha - value price
+//            .map{(key, value) in (name: key, price: value)}
+//    }
+        
+        var filteredMenu: [(name: String,price:Double)]{
+            menuItems.filter{ !showPremium || $0.value >= 10 }
+                .map{(key,value) in (name: key, price: value)}
+        }
+    var shouldShowMenu: Bool{
+        showMenu || showPremium
+    }
     
     var body: some View {
         VStack{ //vertical
@@ -44,74 +66,34 @@ struct MenuView: View {
                     .bold()
             }
             
-            //main
+            //main view
             VStack{
                 Toggle("Show Menu", isOn: $showMenu)
                     .padding(.bottom)
                 
-                Toggle("Show Thank You Message", isOn: $showthankYou)
-                
-                
-                if showthankYou{
-                    Text("Thanks for visiting Little Lemon Restaurant!")
-                        .font(.title3)
-                        .foregroundColor(.blue)
-                        .italic()
-                        .padding(.bottom)
+                Toggle("Premium", isOn: $showPremium)
+
+                Button("View Desserts"){
+                    showDessert.toggle()
                 }
-            }
+                        .sheet(isPresented: $showDessert){
+                            DessertView()
+                        }
+                }
             
             
             //Menu List
-            if showMenu {
-                List {
-                    ForEach(menuItems.sorted(by: {$0.key > $1.key}), id: \.key) { (name,price) in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(name)
-                                    .bold()
-                                Text("$\(price,specifier: "%.2f")")
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            //Premium Badge
-                            
-                            if price > 10 {
-                                HStack{
-                                    Image(systemName: "star.fill")
-                                    Text("Premium")
-                                }
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                                .padding()
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(8)
-                            }
-                            // another if value badge for items
-                            
-                            if price < 7 {
-                                HStack{
-                                    Image(systemName: "tag.fill")
-                                    Text("Value")
-                                        .font(.caption)
-                                        .foregroundColor(.green)
-                                        .padding(6)
-                                        .background(Color.green.opacity(0.1))
-                                        .cornerRadius(8)
-                                    
-                                }
-                            }
-                            
-                        }
-                    }
+            if shouldShowMenu {
+                if showPremium {
+                    Text("Showing Premium Items Only")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                        .padding()
                     
                 }
-            }// the end of the List
-        }
-    }
-}
-    
-#Preview {
-    MenuView()
-    }
-
+                List {
+                    ForEach(filteredMenu.sorted(by: { $0.name < $1.name }), id: \.name) { item in                        HStack {                            VStack(alignment: .leading) {                                Text(item.name)                                    .bold();                                Text("$\(item.price, specifier: "%.2f")")
+                                    .foregroundColor(.secondary)
+                            }
+                           
+                        Spacer();                            if item.price >= 10 {                                Label("Premium", systemImage: "star.fill")                                    .font(.caption)                                    .foregroundColor(.orange)                                    .padding(6)                                    .background(Color.orange.opacity(0.1))                                    .cornerRadius(8)                            };                            if item.price < 7 {                                Label("Value", systemImage: "tag.fill")                                    .font(.caption)                                    .foregroundColor(.green)                                    .padding(6)                                    .background(Color.green.opacity(0.1))                                    .cornerRadius(8)                            }                        }                    }                }            }        }        .padding()    }};#Preview {    MenuView()}
